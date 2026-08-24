@@ -483,14 +483,7 @@ H.MakeDraggable(UI,Root,MinimizedIcon)
 	local Body=Instance.new("Frame",Win)
 	Body.Size=UDim2.new(1,0,1,-45); Body.Position=UDim2.new(0,0,0,45); Body.BackgroundTransparency=1
 	local Sidebar=Instance.new("Frame",Body)
-local tabBig = true
-
-local tabSizeBig = 140
-local tabSizeSmall = 60
-
-Sidebar.Size=UDim2.new(0,tabSizeBig,1,0)
-Sidebar.BackgroundColor3=C.SURFACE
-Sidebar.BorderSizePixel=0
+	Sidebar.Size=UDim2.new(0,80,1,0); Sidebar.BackgroundColor3=C.SURFACE; Sidebar.BorderSizePixel=0
 	local SidebarStroke=Instance.new("Frame",Sidebar)
 	SidebarStroke.Size=UDim2.new(0,1,1,0); SidebarStroke.Position=UDim2.new(1,0,0,0)
 	SidebarStroke.BackgroundColor3=C.DIVIDER; SidebarStroke.BorderSizePixel=0
@@ -503,34 +496,6 @@ Sidebar.BorderSizePixel=0
 	TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		TabContainer.CanvasSize=UDim2.new(0,0,0,TabLayout.AbsoluteContentSize.Y+20)
 	end)
-	local ResizeTab = Instance.new("TextButton", Sidebar)
-ResizeTab.Size = UDim2.new(0,25,0,25)
-ResizeTab.Position = UDim2.new(1,-30,0,10)
-ResizeTab.Text = "⇔"
-ResizeTab.BackgroundColor3 = C.SURFACE
-ResizeTab.TextColor3 = C.TEXT
-ResizeTab.BorderSizePixel = 0
-
-
-ResizeTab.MouseButton1Click:Connect(function()
-	tabBig = not tabBig
-
-	local targetSize
-	
-	if tabBig then
-		targetSize = tabSizeBig
-	else
-		targetSize = tabSizeSmall
-	end
-
-	S.TweenService:Create(
-		Sidebar,
-		TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-		{
-			Size = UDim2.new(0,targetSize,1,0)
-		}
-	):Play()
-end)
 	local ProfileContainer=Instance.new("Frame",Sidebar)
 	ProfileContainer.Size=UDim2.new(1,0,0,65); ProfileContainer.Position=UDim2.new(0,0,1,-65)
 	ProfileContainer.BackgroundColor3=C.BASE; ProfileContainer.BorderSizePixel=0
