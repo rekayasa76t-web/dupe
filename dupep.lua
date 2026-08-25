@@ -538,7 +538,7 @@ H.MakeDraggable(UI,Root,MinimizedIcon)
 	-- ============================================================
 	-- TABS
 	-- ============================================================
-local PageNames={"Dupe"}
+local PageNames={"Dupe","Scan Tas"}
 	for _,name in ipairs(PageNames) do H.BuatNavButton(UI,name); H.BuatPage(UI,name) end
 
 	BuildTabsUI(UI)
@@ -1086,8 +1086,69 @@ scanInventory()
     end)
 end
 	
+
+function BuildScanTasTab(UI, P_SCAN)
+    local scanOptions = {}
+
+    local function scanTas()
+        table.clear(scanOptions)
+        local map = {}
+
+        local function check(child)
+            if not child:IsA("Tool") then return end
+            if child:GetAttribute("CrystalName") == nil and child:GetAttribute("Tier") == nil and not child.Name:find("Crystal") then return end
+
+            local name = child.Name
+            local weight, price, luck = "", "", ""
+
+            for _,v in ipairs(child:GetDescendants()) do
+                if v:IsA("TextLabel") then
+                    local t = v.Text
+                    if t:find("TON") or t:find("KG") then weight = t
+                    elseif t:find("%$") then price = t
+                    elseif t:find("%%") then luck = t end
+                end
+            end
+
+            local key = name.."|"..weight.."|"..price.."|"..luck
+            if map[key] then
+                map[key].count = map[key].count + 1
+            else
+                map[key] = {name=name,weight=weight,price=price,luck=luck,count=1}
+            end
+        end
+
+        local bp = game.Players.LocalPlayer:FindFirstChildOfClass("Backpack")
+        if bp then for _,v in ipairs(bp:GetChildren()) do check(v) end end
+        local ch = game.Players.LocalPlayer.Character
+        if ch then for _,v in ipairs(ch:GetChildren()) do check(v) end end
+
+        for _,v in pairs(map) do
+            local text = v.name.." x"..v.count
+            if v.weight ~= "" then text = text.." | "..v.weight end
+            if v.price ~= "" then text = text.." | "..v.price end
+            if v.luck ~= "" then text = text.." | "..v.luck end
+            table.insert(scanOptions,text)
+        end
+        table.sort(scanOptions)
+    end
+
+    UI.BuatSection(UI,P_SCAN,"Crystal Scanner")
+    local btn = UI.BuatButton(UI,P_SCAN,"↻ Scan Tas","Hitung jumlah kristal")
+    btn.MouseButton1Click:Connect(function()
+        scanTas()
+        if Notify then Notify("Tas berhasil di-scan",2) end
+    end)
+
+    UI.BuatSection(UI,P_SCAN,"Hasil Scan")
+    for _,v in ipairs(scanOptions) do
+        UI.BuatButton(UI,P_SCAN,v,"")
+    end
+end
+
 function BuildTabsUI(UI)
 	BuildDupeTab(UI,UI.Pages.Dupe)
+	BuildScanTasTab(UI,UI.Pages["Scan Tas"])
 end
 
 InitializeUI()
