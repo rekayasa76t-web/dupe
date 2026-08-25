@@ -1088,91 +1088,37 @@ end
 	
 
 function BuildScanTasTab(UI, P_SCAN)
+
     local scanOptions = {}
-    local resultObjects = {}
 
-    local function clearResults()
-        for _,obj in ipairs(resultObjects) do
-            pcall(function() obj:Destroy() end)
-        end
-        table.clear(resultObjects)
-    end
+    UI.BuatSection(UI, P_SCAN, "Crystal Scanner")
 
-    local function scanTas()
+    local btn = UI.BuatButton(UI, P_SCAN, "↻ Scan Tas", "Scan inventory")
+
+    btn.MouseButton1Click:Connect(function()
+
         table.clear(scanOptions)
-        local map = {}
 
-        local function check(child)
-            if not isCrystalTool(child) then return end
+        -- jalankan scanner yang sama dengan Dupe
+        scanInventory()
 
-            local name = child.Name
-            local weight, price, luck = "", "", ""
-
-            for _,v in ipairs(child:GetDescendants()) do
-                if v:IsA("TextLabel") then
-                    local t = v.Text
-                    if t:find("TON") or t:find("KG") then
-                        weight = t
-                    elseif t:find("%$") then
-                        price = t
-                    elseif t:find("%%") then
-                        luck = t
-                    end
-                end
-            end
-
-            local key = name.."|"..weight.."|"..price.."|"..luck
-
-            if map[key] then
-                map[key].count += 1
-            else
-                map[key] = {
-                    name=name,
-                    weight=weight,
-                    price=price,
-                    luck=luck,
-                    count=1
-                }
-            end
+        -- salin hasil scan crystal dari Dupe
+        for _,v in ipairs(crystalOptions) do
+            table.insert(scanOptions, v)
         end
 
-        local bp = game.Players.LocalPlayer:FindFirstChildOfClass("Backpack")
-        if bp then for _,v in ipairs(bp:GetChildren()) do check(v) end end
-
-        local ch = game.Players.LocalPlayer.Character
-        if ch then for _,v in ipairs(ch:GetChildren()) do check(v) end end
-
-        for _,v in pairs(map) do
-            local txt = v.name.." x"..v.count
-            if v.weight ~= "" then txt = txt.." | "..v.weight end
-            if v.price ~= "" then txt = txt.." | "..v.price end
-            if v.luck ~= "" then txt = txt.." | "..v.luck end
-            table.insert(scanOptions,txt)
+        -- tampilkan hasil di output untuk cek
+        for _,v in ipairs(scanOptions) do
+            print("[SCAN TAS] "..v)
         end
 
-        table.sort(scanOptions)
-        return scanOptions
-    end
+        if Notify then
+            Notify("Scan Tas selesai: "..#scanOptions.." jenis kristal", 2)
+        end
 
-    UI.BuatSection(UI,P_SCAN,"Crystal Scanner")
+    end)
 
-    local btn = UI.BuatButton(UI,P_SCAN,"↻ Scan Tas","Hitung jumlah kristal")
-
-btn.MouseButton1Click:Connect(function()
-    clearResults()
-
-    local hasil = scanTas()
-
-    for _,text in ipairs(hasil) do
-        print(text)
-    end
-
-    if Notify then
-        Notify("Scan selesai: "..#hasil.." jenis kristal", 2)
-    end
-end)
-
-end -- TUTUP BuildScanTasTab
+end
 
 function BuildTabsUI(UI)
     BuildDupeTab(UI,UI.Pages.Dupe)
