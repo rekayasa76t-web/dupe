@@ -1089,14 +1089,21 @@ end
 
 function BuildScanTasTab(UI, P_SCAN)
     local scanOptions = {}
+    local resultObjects = {}
+
+    local function clearResults()
+        for _,obj in ipairs(resultObjects) do
+            pcall(function() obj:Destroy() end)
+        end
+        table.clear(resultObjects)
+    end
 
     local function scanTas()
         table.clear(scanOptions)
         local map = {}
 
         local function check(child)
-            if not child:IsA("Tool") then return end
-            if child:GetAttribute("CrystalName") == nil and child:GetAttribute("Tier") == nil and not child.Name:find("Crystal") then return end
+            if not isCrystalTool(child) then return end
 
             local name = child.Name
             local weight, price, luck = "", "", ""
@@ -1104,46 +1111,64 @@ function BuildScanTasTab(UI, P_SCAN)
             for _,v in ipairs(child:GetDescendants()) do
                 if v:IsA("TextLabel") then
                     local t = v.Text
-                    if t:find("TON") or t:find("KG") then weight = t
-                    elseif t:find("%$") then price = t
-                    elseif t:find("%%") then luck = t end
+                    if t:find("TON") or t:find("KG") then
+                        weight = t
+                    elseif t:find("%$") then
+                        price = t
+                    elseif t:find("%%") then
+                        luck = t
+                    end
                 end
             end
 
             local key = name.."|"..weight.."|"..price.."|"..luck
+
             if map[key] then
-                map[key].count = map[key].count + 1
+                map[key].count += 1
             else
-                map[key] = {name=name,weight=weight,price=price,luck=luck,count=1}
+                map[key] = {
+                    name=name,
+                    weight=weight,
+                    price=price,
+                    luck=luck,
+                    count=1
+                }
             end
         end
 
         local bp = game.Players.LocalPlayer:FindFirstChildOfClass("Backpack")
         if bp then for _,v in ipairs(bp:GetChildren()) do check(v) end end
+
         local ch = game.Players.LocalPlayer.Character
         if ch then for _,v in ipairs(ch:GetChildren()) do check(v) end end
 
         for _,v in pairs(map) do
-            local text = v.name.." x"..v.count
-            if v.weight ~= "" then text = text.." | "..v.weight end
-            if v.price ~= "" then text = text.." | "..v.price end
-            if v.luck ~= "" then text = text.." | "..v.luck end
-            table.insert(scanOptions,text)
+            local txt = v.name.." x"..v.count
+            if v.weight ~= "" then txt = txt.." | "..v.weight end
+            if v.price ~= "" then txt = txt.." | "..v.price end
+            if v.luck ~= "" then txt = txt.." | "..v.luck end
+            table.insert(scanOptions,txt)
         end
+
         table.sort(scanOptions)
+        return scanOptions
     end
 
     UI.BuatSection(UI,P_SCAN,"Crystal Scanner")
+
     local btn = UI.BuatButton(UI,P_SCAN,"↻ Scan Tas","Hitung jumlah kristal")
     btn.MouseButton1Click:Connect(function()
-        scanTas()
-        if Notify then Notify("Tas berhasil di-scan",2) end
-    end)
+        clearResults()
 
-    UI.BuatSection(UI,P_SCAN,"Hasil Scan")
-    for _,v in ipairs(scanOptions) do
-        UI.BuatButton(UI,P_SCAN,v,"")
-    end
+        local result = scanTas()
+
+        for _,v in ipairs(result) do
+            local row = UI.BuatButton(UI,P_SCAN,v,"")
+            table.insert(resultObjects,row)
+        end
+
+        if Notify then Notify("Tas berhasil di-scan : "..#result.." jenis kristal",2) end
+    end)
 end
 
 function BuildTabsUI(UI)
