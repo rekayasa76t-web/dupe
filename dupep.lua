@@ -1161,36 +1161,23 @@ function BuildScanTasTab(UI, P_SCAN)
 btn.MouseButton1Click:Connect(function()
     clearResults()
 
-    -- pakai cara baca inventory yang sama seperti Dupe
-    local crystalCount = {}
+    local hasil = scanTas()
 
-    local function checkScan(child)
-        if isCrystalTool(child) then
-            crystalCount[child.Name] = (crystalCount[child.Name] or 0) + 1
-        end
+    for _,text in ipairs(hasil) do
+        print(text)
     end
 
-    local bp = game.Players.LocalPlayer:FindFirstChildOfClass("Backpack")
-    if bp then
-        for _,item in ipairs(bp:GetChildren()) do
-            checkScan(item)
-        end
-    end
-
-    local char = game.Players.LocalPlayer.Character
-    if char then
-        for _,item in ipairs(char:GetChildren()) do
-            checkScan(item)
-        end
-    end
-
-    for name,total in pairs(crystalCount) do
-        print(name.." x"..total)
-
-        local text = name.." x"..total
-        UI.BuatLabel(UI, P_SCAN, text)
+    if Notify then
+        Notify("Scan selesai: "..#hasil.." jenis kristal", 2)
     end
 end)
+
+end -- TUTUP BuildScanTasTab
+
+function BuildTabsUI(UI)
+    BuildDupeTab(UI,UI.Pages.Dupe)
+    BuildScanTasTab(UI,UI.Pages["Scan Tas"])
+end
 
 function BuildTabsUI(UI)
 	BuildDupeTab(UI,UI.Pages.Dupe)
